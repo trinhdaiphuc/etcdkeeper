@@ -17,7 +17,7 @@ type AppConfig struct {
 	UseAuth        bool          `env:"USE_AUTH,true"`
 	ConnectTimeout time.Duration `env:"CONNECT_TIMEOUT,5s"`
 	SecretKey      []byte        `env:"SECRET_KEY,secret"`
-	ExpiredTime    time.Duration `env:"COOKIE_EXPIRED_TIME,24h"`
+	ExpiredTime    time.Duration `env:"EXPIRED_TIME,24h"`
 }
 
 var cfg = &AppConfig{}

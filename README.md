@@ -6,29 +6,35 @@
 * Based easyui framework to achieve(easyui license [easyui website](http://www.jeasyui.com)).
 
 ## Usage
-* Run etcdkeeper.exe (windows version)
-* Run etcdkeeper.exe -auth (If enable etcd authentication)
-* [Download other platform releases](https://github.com/evildecay/etcdkeeper/releases).
+* Run etcdkeeper by go
+  
+```shell
+go run main.go
 ```
-  Usage of etcdkeeper.exe:
-  -h string
-        host name or ip address (default: "0.0.0.0", the http server addreess, not etcd address)
-  -p int
-        port (default 8080)
-  -sep string
-        Separator (default "/")
-  -usetls
-        use tls (only v3)
-  -cacert string
-        verify certificates of TLS-enabled secure servers using this CA bundle (only v3)
-  -cert string
-        identify secure client using this TLS certificate file (only v3)
-  -key string
-        identify secure client using this TLS key file (only v3)
-  -auth bool
-        use etcd auth
-  -timeout int
-        ETCD client connect timeout
+
+* Run etcdkeeper by Docker-compose (with etcd-server)
+
+```shell
+docker-compose up
+```  
+
+* Add environment USE_AUTH=true (If enable etcd authentication)
+
+You can custom config with environments:
+
+```dotenv
+HOST=127.0.0.1                  // host name or ip address (default: "0.0.0.0", the http server addreess, not etcd address)
+PORT=8080                       // port (default 8080)
+SEPARATOR=/                     // Separator (default "/")
+USE_TLS=false                   // use tls (only v3, defaul false)
+CA_FILE=path/to/ca-file         //verify certificates of TLS-enabled secure servers using this CA bundle (only v3)
+CERT_FILE=path/to/cert-file     // identify secure client using this TLS certificate file (only v3)
+KEY_FILE=path/to/key-file       // identify secure client using this TLS key file (only v3)
+USE_AUTH=true                   // use etcd auth (default false)
+CONNECT_TIMEOUT=5s              // ETCD client connect timeout (default 5s) such as "300ms", "-1.5h" or "2h45m".
+                                // Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+SECRET_KEY=secret               // Jwt secret key (defaul secret)                  
+EXPIRED_TIME=24h                // Jwt expired time (defaul 24h)
 ```
 * Open your browser and enter the address: http://127.0.0.1:8080/etcdkeeper
 * Click on the version of the title to select the version of ETCD. The default is V3. Reopening will remember your choice.
