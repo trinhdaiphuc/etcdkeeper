@@ -1,30 +1,29 @@
-FROM golang:1.12 as build
+FROM golang:1.16-alpine3.14 as build
 
-ENV GO111MODULE on
-ENV GOPROXY "https://goproxy.io"
+ENV CGO_ENABLED=1
+ENV GO111MODULE=on
 
-WORKDIR /opt
-RUN mkdir etcdkeeper
-ADD . /opt/etcdkeeper
-WORKDIR /opt/etcdkeeper/src/etcdkeeper
+RUN apk add --no-cache git gcc g++
 
-RUN go mod download \
-    && go build -o etcdkeeper.bin main.go
+# Set the Current Working Directory inside the container
+WORKDIR /src
 
+# We want to populate the module cache based on the go.{mod,sum} files.
+COPY go.mod .
+COPY go.sum .
 
-FROM alpine:3.10
+RUN go mod download
 
-ENV HOST="0.0.0.0"
-ENV PORT="8080"
+COPY . .
 
-# RUN apk add --no-cache ca-certificates
+RUN go build -o bin/etcdkeeper main.go
 
-RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
+FROM alpine:3.14
 
-WORKDIR /opt/etcdkeeper
-COPY --from=build /opt/etcdkeeper/src/etcdkeeper/etcdkeeper.bin .
-ADD assets assets
+WORKDIR /app
 
-EXPOSE ${PORT}
+COPY --from=build /src/bin/etcdkeeper .
 
-ENTRYPOINT ./etcdkeeper.bin -h $HOST -p $PORT
+RUN chmod +x etcdkeeper
+
+ENTRYPOINT ["./etcdkeeper"] 

@@ -5,7 +5,6 @@
 _obj
 _test
 .idea
-pkg
 bin
 *.tmp
 
