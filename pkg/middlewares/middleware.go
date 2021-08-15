@@ -11,7 +11,7 @@ import (
 // JwtCustomClaims are custom claims extending default ones.
 // See https://github.com/golang-jwt/jwt for more examples
 type JwtCustomClaims struct {
-	User *etcd.UserInfo
+	User *etcd.UserInfo `json:"user"`
 	jwt.StandardClaims
 }
 
@@ -22,8 +22,8 @@ const (
 func NewToken(user *etcd.UserInfo) (string, error) {
 	// Set custom claims
 	claims := &JwtCustomClaims{
-		user,
-		jwt.StandardClaims{
+		User: user,
+		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(config.GetConfig().ExpiredTime).Unix(),
 		},
 	}
@@ -38,13 +38,6 @@ func NewToken(user *etcd.UserInfo) (string, error) {
 }
 
 func GetUserInfo(c echo.Context) (*etcd.UserInfo, bool) {
-	token, ok := c.Get(UserKey).(*jwt.Token)
-	if !ok {
-		return nil, ok
-	}
-	if claims, ok := token.Claims.(*JwtCustomClaims); ok && token.Valid {
-		return claims.User, true
-	}
-
-	return nil, false
+	user, ok := c.Get(UserKey).(*etcd.UserInfo)
+	return user, ok
 }

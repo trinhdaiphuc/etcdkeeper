@@ -1,8 +1,11 @@
 package routers
 
 import (
+	"errors"
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/trinhdaiphuc/etcdkeeper/config"
 	"github.com/trinhdaiphuc/etcdkeeper/pkg/controllers"
 	"github.com/trinhdaiphuc/etcdkeeper/pkg/middlewares"
 )
@@ -11,7 +14,7 @@ func SetRoutes(e *echo.Echo) {
 	// Configure middleware with the custom claims type
 	config := middleware.JWTConfig{
 		Claims:     &middlewares.JwtCustomClaims{},
-		SigningKey: []byte("secret"),
+		SigningKey: config.GetConfig().SecretKey,
 		Skipper: func(c echo.Context) bool {
 			if c.Path() == "/v2/separator" || c.Path() == "/v3/separator" ||
 				c.Path() == "/v2/connect" || c.Path() == "/v3/connect" {
@@ -20,6 +23,24 @@ func SetRoutes(e *echo.Echo) {
 			return false
 		},
 		ContextKey: middlewares.UserKey,
+		ParseTokenFunc: func(auth string, c echo.Context) (interface{}, error) {
+			token, err := jwt.ParseWithClaims(auth, &middlewares.JwtCustomClaims{}, func(tkn *jwt.Token) (interface{}, error) {
+				return config.GetConfig().SecretKey, nil
+			})
+
+			if err != nil {
+				return nil, err
+			}
+			if !token.Valid {
+				return nil, errors.New("invalid token")
+			}
+
+			claims, ok := token.Claims.(*middlewares.JwtCustomClaims)
+			if !(ok && token.Valid) {
+				return nil, errors.New("invalid claims")
+			}
+			return claims.User, nil
+		},
 	}
 
 	v2 := e.Group("/v2")
